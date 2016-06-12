@@ -67,6 +67,7 @@ function getLongitudes($xmlObj) {
     return $xmlObj->xpath('//*[@id="main_container"]/div[4]/div/div[5]/form/input[1]/@value');
 }
 
+// returns array-ified data ready to become objects
 function getData($url) {
     $xml = parseHTML($url);
     $storeIDs = getStoreIDs($xml);
@@ -74,15 +75,41 @@ function getData($url) {
     $phoneNumbers = getPhone($xml);
     $latitudes = getLatitudes($xml);
     $longitudes = getLongitudes($xml);
-    return sortData($storeIDs, $addresses, $phoneNumbers, $latitudes, $longitudes);
+    $latLng = combineLatLng($latitudes, $longitudes);
+    return sortData($storeIDs, $addresses, $phoneNumbers, $latLng);
 }
 
-function sortData($listOne, $listTwo, $listThree, $listFour, $listFive) {
-    $zipFirst = array_map(null, $listFour, $listFive);
-    return array_map(null, $listOne, $listTwo, $listThree, $zipFirst);
+// latitude and longitude are of necessity collected separately;
+// don't want to lose track of them of have them change order
+function combineLatLng($lat, $lng) {
+    return array_map(null, $lat, $lng);
 }
 
-getData($url);
+function sortData($listOne, $listTwo, $listThree, $listFour) {
+    return array_map(null, $listOne, $listTwo, $listThree, $listFour);
+}
+
+// for object assembly, expects arrays in $sortedData
+// to be ordered like this:
+// [0]: store id
+// [1]: address
+// [2]: phone
+// [3]: [0]:latitude, [1]:longitude
+function buildObjects($sortedData) {
+    $stores = array();
+    foreach($sortedData as $store) {
+        $newStore = new Store((string)$store[0], (string)$store[1][0], (string)$store[2][0], floatval($store[3][0][0]), floatval($store[3][1][0]));
+        array_push($stores, $newStore);
+    }
+    print_r($stores);
+}
+
+function scrape($url) {
+    $data = getData($url);
+    buildObjects($data);
+}
+
+scrape($url);
 
 // store cleaned response
 ?>

@@ -76,7 +76,7 @@ function getData($url) {
     $latitudes = getLatitudes($xml);
     $longitudes = getLongitudes($xml);
     $latLng = combineLatLng($latitudes, $longitudes);
-    return sortData($storeIDs, $addresses, $phoneNumbers, $latLng);
+    return organizeData($storeIDs, $addresses, $phoneNumbers, $latLng);
 }
 
 // latitude and longitude are of necessity collected separately;
@@ -85,7 +85,10 @@ function combineLatLng($lat, $lng) {
     return array_map(null, $lat, $lng);
 }
 
-function sortData($listOne, $listTwo, $listThree, $listFour) {
+// ideally this would return an associative array;
+// for the first time around, consistently ordered by index
+// is good enough
+function organizeData($listOne, $listTwo, $listThree, $listFour) {
     return array_map(null, $listOne, $listTwo, $listThree, $listFour);
 }
 
@@ -101,15 +104,30 @@ function buildObjects($sortedData) {
         $newStore = new Store((string)$store[0], (string)$store[1][0], (string)$store[2][0], floatval($store[3][0][0]), floatval($store[3][1][0]));
         array_push($stores, $newStore);
     }
-    print_r($stores);
+    return $stores;
 }
 
-function scrape($url) {
+function storeData($conn_string, $objs) {
+    $db = pg_connect($conn_string);
+    if ($db) {
+        echo 'connected';
+        foreach($objs as $obj) {
+            $result = pg_query($db, "INSERT INTO stores(store_id, address, phone, latitude, longitude)
+                                VALUES('$obj->storeID', '$obj->address', '$obj->phone', $obj->latitude, $obj->longitude);");
+            var_dump($result);
+        }
+    }
+    else {
+        echo 'failed to connect';
+    }
+    pg_close($db);
+}
+
+function scrape($url, $conn_string) {
     $data = getData($url);
-    buildObjects($data);
+    $stores = buildObjects($data);
+    storeData($conn_string, $stores);
 }
 
-scrape($url);
-
-// store cleaned response
+scrape($url, $conn_string);
 ?>

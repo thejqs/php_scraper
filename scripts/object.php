@@ -3,13 +3,15 @@ class Store {
     public $storeID;
     public $address;
     public $phone;
-    public $hours;
+    public $latitude;
+    public $longitude;
 
-    public function __construct($storeID, $address, $hours, $phone) {
+    public function __construct($storeID, $address, $phone, $latitude, $longitude) {
         $this->storeID = $storeID;
         $this->address = $address;
         $this->phone = $phone;
-        $this->hours = $hours;
+        $this->latitude = $latitude;
+        $this->longitude = $longitude;
     }
 }
 ?>

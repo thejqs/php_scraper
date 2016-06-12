@@ -1,5 +1,3 @@
-#!usr/bin/env php
-
 <?php
 class Store {
     public $storeID;

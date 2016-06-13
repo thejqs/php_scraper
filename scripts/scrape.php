@@ -18,7 +18,6 @@ function getHTML($url) {
     $response = curl_exec($ch);
     // close curl resource
     curl_close($ch);
-
     return $response;
 }
 
@@ -101,6 +100,7 @@ function organizeData($listOne, $listTwo, $listThree, $listFour) {
 function buildObjects($sortedData) {
     $stores = array();
     foreach($sortedData as $store) {
+        // values come in as SimpleXMLElement objects, hence the casting
         $newStore = new Store((string)$store[0], (string)$store[1][0], (string)$store[2][0], floatval($store[3][0][0]), floatval($store[3][1][0]));
         array_push($stores, $newStore);
     }
@@ -111,9 +111,11 @@ function storeData($conn_string, $objs) {
     $db = pg_connect($conn_string);
     if ($db) {
         echo 'connected';
+        $query = "INSERT INTO stores(store_id, address, phone, latitude, longitude)
+                  VALUES($1, $2, $3, $4, $5);";
         foreach($objs as $obj) {
-            $result = pg_query($db, "INSERT INTO stores(store_id, address, phone, latitude, longitude)
-                                VALUES('$obj->storeID', '$obj->address', '$obj->phone', $obj->latitude, $obj->longitude);");
+            $vals = array($obj->storeID, $obj->address, $obj->phone, $obj->latitude, $obj->longitude);
+            $result = pg_query_params($db, $query, $vals);
             var_dump($result);
         }
     }

@@ -36,3 +36,9 @@ function storeData($conn_string, $objs) {
     pg_close($db);
 }
 ```
+
+Hey, look at that.
+
+![alt text][db]
+
+[db]: https://github.com/thejqs/php_scraper/blob/master/psql_screenshot.png
